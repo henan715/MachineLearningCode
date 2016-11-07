@@ -1,0 +1,50 @@
+# coding:utf-8
+from sklearn import linear_model
+from sklearn import neighbors
+from numpy import *
+import numpy as np
+import operator
+from matplotlib import pyplot as plt
+import os
+
+def img2vector(filename):
+    returnVect = zeros((1, 1024))
+    fr = open(filename)
+    for i in range(32):
+        lineStr = fr.readline()
+        for j in range(32):
+            returnVect[0, 32 * i + j] = int(lineStr[j])
+    return returnVect
+
+def handWritingClassTestWithSklearn():
+    knn = neighbors.KNeighborsClassifier()
+
+    hwLabels = []
+    trainingFileList = os.listdir('./ch2KNN/data/trainingDigits')
+    m = len(trainingFileList)
+    trainingMat = zeros((m, 1024))
+    for i in range(m):
+        fileNameStr = trainingFileList[i]
+        fileStr = fileNameStr.split('.')[0]
+        classNumStr = int(fileStr.split('_')[0])
+        hwLabels.append(classNumStr)
+        trainingMat[i, :] = img2vector('./ch2KNN/data/trainingDigits/%s' % fileNameStr)
+    knn.fit(trainingMat,hwLabels)
+    testFileList = os.listdir('./ch2KNN/data/testDigits')
+    errorCount = 0.0
+    mTest = len(testFileList)
+    for i in range(mTest):
+        fileNameStr = testFileList[i]
+        fileStr = fileNameStr.split('.')[0]
+        classNumStr = int(fileStr.split('_')[0])
+        vectorUnderTest = img2vector('./ch2KNN/data/testDigits/%s' % fileNameStr)
+        #classfierResult = classify(vectorUnderTest, trainingMat, hwLabels, 3)
+        classfierResult = knn.predict(vectorUnderTest)
+        print "预测: %d, 实际: %d" % (classfierResult, classNumStr)
+        if classfierResult != classNumStr:
+            errorCount += 1.0
+    print '错误数目:', errorCount
+    print "错误率:%f" % (errorCount / float(mTest))
+
+
+handWritingClassTest()
